@@ -1,0 +1,13 @@
+name = "day01"
+uuid = "9e5ca095-0db7-4748-b2d1-97371d473a44"
+authors = ["László Vaskó <1771332+vlaci@users.noreply.github.com>"]
+version = "0.1.0"
+
+[deps]
+IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
