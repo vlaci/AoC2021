@@ -9,13 +9,13 @@ function read()
 end
 
 function depth(measurements)
-    count(p -> p[2] - p[1] > 0, partition(measurements, 2, 1))
+    count(p -> p[2] > p[1], partition(measurements, 2, 1))
 end
 
 function depth(measurements, windowsize)
     sums₁ = map(sum, partition(measurements, windowsize, 1))
     sums₂ = map(sum, partition(measurements[2:end], windowsize, 1))
-    count(p -> p[2] - p[1] > 0, zip(sums₁, sums₂))
+    count(p -> p[2] > p[1], zip(sums₁, sums₂))
 end
 
 function run()
