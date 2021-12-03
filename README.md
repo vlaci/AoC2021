@@ -9,3 +9,7 @@
 
 * [Julia](02/julia/src/day02.jl)
 * [Rust](02/rust/src/main.rs)
+
+## [03](03)
+
+* [Julia](03/julia/src/day03.jl)
