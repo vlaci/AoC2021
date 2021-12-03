@@ -2,7 +2,7 @@ using day03
 using Test
 
 @testset "Binary Diagnostics" begin
-    @test day03.bindiag("""
+    report = day03.Report("""
         00100
         11110
         10110
@@ -15,6 +15,8 @@ using Test
         11001
         00010
         01010
-        """) ==
-        (22, 9)
+        """)
+
+    @test day03.bindiag(report) == 22 * 9
+    @test day03.lifesupportrating(report) == 23 * 10
 end
