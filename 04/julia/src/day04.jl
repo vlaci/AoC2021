@@ -56,6 +56,14 @@ function play!(bingo::Bingo)
     end
 end
 
+function playtolast!(bingo::Bingo)
+    rv = missing
+    while hasboardleft(bingo)
+        rv = play!(bingo)
+    end
+    rv
+end
+
 function draw!(board::Board, number::Int)
     i = get(board.lookup, number, missing)
     if !ismissing(i)
@@ -79,7 +87,11 @@ function winningboard(bingo::Bingo)
     if isnothing(board)
         return nothing
     end
-    bingo.boards[board]
+    popat!(bingo.boards, board)
+end
+
+function hasboardleft(bingo::Bingo)
+    !isempty(bingo.boards)
 end
 
 parser = Lark(grammar, parser = "lalr", transformer = GameParser())
@@ -94,6 +106,7 @@ function run()
     bingo = Bingo(input)
 
     println("The answer to the first part is $(play!(bingo))")
+    println("The answer to the second part is $(playtolast!(bingo))")
 end
 
 end

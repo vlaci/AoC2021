@@ -24,4 +24,5 @@ using Test
         2  0 12  3  7
         """)
     @test day04.play!(bingo) == 4512
+    @test day04.playtolast!(bingo) == 1924
 end
