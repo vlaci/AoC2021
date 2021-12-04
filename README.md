@@ -13,3 +13,7 @@
 ## [03](03)
 
 * [Julia](03/julia/src/day03.jl)
+
+## [04](04)
+
+* [Julia](04/julia/src/day04.jl)
