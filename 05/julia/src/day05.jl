@@ -26,34 +26,37 @@ function parsemap(input)
     Lerche.parse(parser, input)
 end
 
-function fillmap(m)
+function fillmap(m, includediag)
     rv = []
     for (i, line) in enumerate(m)
-        ((x₁,y₁), (x₂,y₂)) = line
-        if x₁ != x₂ && y₁ != y₂
-            continue
-        end
-        if x₁ > x₂
-            x₁, x₂ = x₂, x₁
-        end
-        if y₁ > y₂
-            y₁, y₂ = y₂, y₁
-        end
-
-        append!(rv, [(x,y) for x = x₁:x₂, y = y₁:y₂])
+        ((x₁, y₁), (x₂, y₂)) = line
+        append!(rv, fillline(line..., includediag))
     end
     rv
 end
 
-function countoverlaps(input)
+function fillline(b, e, includediag)
+    (x₁, y₁), (x₂, y₂) = b, e
+
+    Δx = sign(x₂ - x₁)
+    Δy = sign(y₂ - y₁)
+    if !includediag && Δx != 0 && Δy != 0
+        return []
+    end
+
+    [(x₁ + Δx * i, y₁ + Δy * i) for i = 0:max(abs(x₂ - x₁), abs(y₂ - y₁))]
+end
+
+function countoverlaps(input, includediag)
     m = parsemap(input)
-    f = fillmap(m)
-    count(c->c>1, values(counter(f)))
+    f = fillmap(m, includediag)
+    count(c -> c > 1, values(counter(f)))
 end
 
 function run()
     input = read("$(@__DIR__)/../../input", String)
 
-    println("The answer to the first part is $(countoverlaps(input))")
+    println("The answer to the first part is $(countoverlaps(input, false))")
+    println("The answer to the first part is $(countoverlaps(input, true))")
 end
 end
