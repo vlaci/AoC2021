@@ -1,0 +1,14 @@
+name = "day05"
+uuid = "eedf8aee-cd96-4a9f-9cc6-74be333ace98"
+authors = ["László Vaskó <1771332+vlaci@users.noreply.github.com>"]
+version = "0.1.0"
+
+[deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+Lerche = "d42ef402-04e6-4356-9f73-091573ea58dc"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
