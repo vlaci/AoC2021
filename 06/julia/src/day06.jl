@@ -1,31 +1,21 @@
 module day06
-using DataStructures
-
-mutable struct Fishes
-    timetobirth::Int8
-    count::Int
-end
 
 function countfish(input, days)
     parsed = parse.(Int8, split(input |> strip, ","))
-    fishes = map((p)->Fishes(p.first, p.second), counter(parsed) |> collect)
+    fishes = fill(0, 9)
+    for t in parsed
+        fishes[t+1] += 1
+    end
 
     for d = 1:days
-        births = 0
-        for f = fishes
-            if f.timetobirth == 0
-                f.timetobirth = 6
-                births += f.count
-            else
-                f.timetobirth -= 1
-            end
+        births = fishes[1]
+        for t = 1:8
+            fishes[t] = fishes[t+1]
         end
-        if births > 0
-            push!(fishes, Fishes(8, births))
-        end
-
+        fishes[9] = births
+        fishes[7] += births
     end
-    map(f->f.count, fishes) |> sum
+    sum(fishes)
 end
 
 
