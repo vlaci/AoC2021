@@ -1,25 +1,31 @@
 module day06
+using DataStructures
+
+mutable struct Fishes
+    timetobirth::Int8
+    count::Int
+end
 
 function countfish(input, days)
-    fishes = parse.(Int, split(input |> strip, ","))
+    parsed = parse.(Int8, split(input |> strip, ","))
+    fishes = map((p)->Fishes(p.first, p.second), counter(parsed) |> collect)
 
     for d = 1:days
-        @show d
         births = 0
-        for (i,f) = enumerate(fishes)
-            if f == 0
-                fishes[i] = 6
-                births += 1
+        for f = fishes
+            if f.timetobirth == 0
+                f.timetobirth = 6
+                births += f.count
             else
-                fishes[i] = f - 1
+                f.timetobirth -= 1
             end
         end
-        resize!(fishes, length(fishes) + births)
-        for i = (length(fishes)-births+1):length(fishes)
-            fishes[i] = 8
+        if births > 0
+            push!(fishes, Fishes(8, births))
         end
+
     end
-    length(fishes)
+    map(f->f.count, fishes) |> sum
 end
 
 
@@ -27,6 +33,7 @@ function run()
     input = read("$(@__DIR__)/../../input", String)
 
     println("The answer to the first part is $(countfish(input, 80))")
+    println("The answer to the first part is $(countfish(input, 256))")
 end
 
 end

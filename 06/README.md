@@ -83,3 +83,30 @@ Find a way to simulate lanternfish. *How many lanternfish would there be
 after 80 days?*
 
 Your puzzle answer was `343441`.
+
+## --- Part Two ---
+
+Suppose the lanternfish live forever and have unlimited food and space.
+Would they take over the entire ocean?
+
+After 256 days in the example above, there would be a total of
+`26984457539` lanternfish!
+
+*How many lanternfish would there be after 256 days?*
+
+Your puzzle answer was `1569108373832`.
+
+Both parts of this puzzle are complete! They provide two gold stars:
+\*\*
+
+At this point, you should [return to your Advent
+calendar](https://adventofcode.com/2021) and try another puzzle.
+
+If you still want to see it, you can [get your puzzle
+input](https://adventofcode.com/2021/day/6/input).
+
+You can also <span class="share">\[Share<span class="share-content">on
+[Twitter](https://twitter.com/intent/tweet?text=I%27ve+completed+%22Lanternfish%22+%2D+Day+6+%2D+Advent+of+Code+2021&url=https%3A%2F%2Fadventofcode%2Ecom%2F2021%2Fday%2F6&related=ericwastl&hashtags=AdventOfCode)
+[Mastodon](javascript:void(0);)</span>\]</span> this puzzle.
+
+</div>
