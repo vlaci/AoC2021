@@ -17,4 +17,11 @@ using Test
     )
 
     @test day08.countoutputs(ds) == 26
+
+    entry = day08.Displays(
+        "acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf\n",
+    )
+
+    @test day08.decodesum(entry) == 5353
+    @test day08.decodesum(ds) == 61229
 end
