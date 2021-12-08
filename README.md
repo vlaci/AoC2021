@@ -25,3 +25,7 @@
 ## [06](06)
 
 * [Julia](06/julia/src/day06.jl)
+
+## [07](07)
+
+* [Julia](07/julia/src/day07.jl)
