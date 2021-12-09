@@ -1,0 +1,10 @@
+name = "day09"
+uuid = "580b2687-b5e0-4487-ab34-b27acdb07855"
+authors = ["László Vaskó <1771332+vlaci@users.noreply.github.com>"]
+version = "0.1.0"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
