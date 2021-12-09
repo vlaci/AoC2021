@@ -36,10 +36,34 @@ function risk(m::Map, coords)
     rv
 end
 
+function basins(m::Map, mins)
+    areas = sort!([basin(m, x, y) |> length for (x, y) in mins])
+
+    prod(areas[end-2:end])
+end
+
+function basin(m::Map, x, y)
+    parts = Set([(x, y)])
+    basin!(m, parts, x, y)
+    parts
+end
+
+function basin!(m::Map, parts, x, y)
+    p = filter(neighbours(m, x, y)) do c
+        v = m[CartesianIndex(c)]
+        v < 9 && v > m[x, y]
+    end
+    union!(parts, p)
+    for q in p
+        basin!(m, parts, q...)
+    end
+end
+
 function run()
     input = read("$(@__DIR__)/../../input", String)
     m = parsemap(input)
     mins = minima(m)
     println("The answer to the first part is $(risk(m, mins))")
+    println("The answer to the first part is $(basins(m, mins))")
 end
 end
