@@ -1,4 +1,4 @@
-use std::{env, fmt::Debug, fs::{read, read_to_string}};
+use std::{env, fmt::Debug, fs::read_to_string};
 
 use anyhow::anyhow;
 use thiserror::Error;
@@ -9,31 +9,64 @@ fn main() -> anyhow::Result<()> {
 
     let parsed = parse_lines(&input);
 
-    println!("The answer to the first part is {}", score(&parsed));
+    println!(
+        "The answer to the first part is {}",
+        score_corrupted(&parsed)
+    );
+    println!(
+        "The answer to the second part is {}",
+        score_incomplete(&parsed)
+    );
 
     Ok(())
 }
 
-fn parse_lines(input: &str) -> Vec<Result<Syntax,ParseError>> {
+fn parse_lines(input: &str) -> Vec<Result<Syntax, ParseError>> {
     input.trim().split('\n').map(Syntax::parse).collect()
 }
 
-fn score(parsed: &[Result<Syntax,ParseError>]) -> usize {
-    parsed.iter().filter_map(|r| {
-        match r {
-            Err(ParseError::UnmatchedToken { token: Token { chr, .. }, .. }) =>
-            Some(match chr {
+fn score_corrupted(parsed: &[Result<Syntax, ParseError>]) -> usize {
+    parsed
+        .iter()
+        .filter_map(|r| match r {
+            Err(ParseError::UnmatchedToken {
+                token: Token { chr, .. },
+                ..
+            }) => Some(match chr {
                 ')' => 3,
                 ']' => 57,
                 '}' => 1197,
                 '>' => 25137,
-                _ => unreachable!()
+                _ => unreachable!(),
             }),
             _ => None,
-        }
-    }).sum()
+        })
+        .sum()
 }
 
+fn score_incomplete(parsed: &[Result<Syntax, ParseError>]) -> usize {
+    let mut scores = parsed
+        .iter()
+        .filter_map(|r| match r {
+            Ok(Syntax { completions, .. }) => {
+                let score = completions
+                    .chars()
+                    .map(|c| match c {
+                        ')' => 1,
+                        ']' => 2,
+                        '}' => 3,
+                        '>' => 4,
+                        _ => unreachable!(),
+                    })
+                    .fold(0, |a, v| a * 5 + v);
+                Some(score)
+            }
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    scores.sort_unstable();
+    scores[scores.len() / 2]
+}
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct Token {
@@ -113,6 +146,7 @@ impl Debug for Token {
 #[derive(Debug)]
 struct Syntax {
     tokens: Vec<Token>,
+    completions: String,
 }
 
 #[derive(Error, Debug, PartialEq)]
@@ -166,7 +200,22 @@ impl Syntax {
             }?;
         }
 
-        Ok(Self { tokens })
+        let completions = stack
+            .into_iter()
+            .rev()
+            .map(|t| match t.chr {
+                '(' => ')',
+                '[' => ']',
+                '{' => '}',
+                '<' => '>',
+                _ => unreachable!(),
+            })
+            .collect();
+
+        Ok(Self {
+            tokens,
+            completions,
+        })
     }
 }
 
@@ -213,6 +262,12 @@ mod tests {
     }
 
     #[test]
+    fn test_completions() {
+        let parsed = Syntax::parse("[({(<(())[]>[[{[]{<()<>>").unwrap();
+        assert_eq!(parsed.completions, "}}]])})]");
+    }
+
+    #[test]
     fn test_scoring() {
         let parsed = parse_lines(indoc! {"
             [({(<(())[]>[[{[]{<()<>>
@@ -227,6 +282,7 @@ mod tests {
             <{([{{}}[<[[[<>{}]]]>[]]
         "});
 
-        assert_eq!(score(&parsed), 26397);
+        assert_eq!(score_corrupted(&parsed), 26397);
+        assert_eq!(score_incomplete(&parsed), 288957);
     }
 }
