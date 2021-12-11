@@ -37,3 +37,7 @@
 ## [09](09)
 
 * [Julia](09/julia/src/day09.jl)
+
+## [10](10)
+
+* [Rust](10/rust/src/main.rs)
