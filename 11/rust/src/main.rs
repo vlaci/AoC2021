@@ -15,6 +15,14 @@ fn main() -> anyhow::Result<()> {
     let m = Map::parse(&input)?;
     let flashes: usize = m.iter().take(100).map(|(f, _)| f).sum();
     println!("The answer to the first part is {}", flashes);
+    let synced_at = m
+        .iter()
+        .enumerate()
+        .skip_while(|&(_, (f, _))| f != m.dim.x * m.dim.y)
+        .next()
+        .unwrap()
+        .0;
+    println!("The answer to the second part is {}", synced_at + 1);
 
     Ok(())
 }
@@ -283,6 +291,16 @@ mod tests {
 
         let flashes: usize = m.iter().take(100).map(|(f, _)| f).sum();
         assert_eq!(flashes, 1656);
+
+        let synced_at = m
+            .iter()
+            .enumerate()
+            .skip_while(|&(_, (f, _))| f != m.dim.x * m.dim.y)
+            .next()
+            .unwrap()
+            .0;
+        assert_eq!(synced_at + 1, 195);
+
         Ok(())
     }
 }
