@@ -1,0 +1,11 @@
+[package]
+name = "day12"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+peg = "0.7"
+
+[dev-dependencies]
+indoc = "1.0"

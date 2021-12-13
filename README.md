@@ -45,3 +45,7 @@
 ## [11](11)
 
 * [Rust](11/rust/src/main.rs)
+
+## [12](12)
+
+* [Rust](12/rust/src/main.rs)
