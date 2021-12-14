@@ -49,3 +49,7 @@
 ## [12](12)
 
 * [Rust](12/rust/src/main.rs)
+
+## [13](13)
+
+* [Rust](13/rust/src/main.rs)
