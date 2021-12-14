@@ -143,3 +143,18 @@ completed count as a single dot.
 instruction on your transparent paper?*
 
 Your puzzle answer was `850`.
+
+## --- Part Two ---
+
+<span
+title="How can you fold it that many times? You tell me, I'm not the one folding it.">Finish
+folding</span> the transparent paper according to the instructions. The
+manual says the code is always *eight capital letters*.
+
+*What code do you use to activate the infrared thermal imaging camera
+system?*
+
+Your puzzle answer was `AHGCPGAU`.
+
+Both parts of this puzzle are complete! They provide two gold stars:
+\*\*

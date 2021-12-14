@@ -18,6 +18,19 @@ fn main() -> anyhow::Result<()> {
         "The answer to the first part is {}",
         map.fold(ins.folds[0]).count()
     );
+
+    let map = ins
+        .folds
+        .iter()
+        .scan(map, |m, &f| {
+            *m = m.fold(f);
+            Some(m.clone())
+        })
+        .last();
+
+    println!("The answer to the second part is {:?}", map);
+
+    Ok(())
 }
 
 struct Instructions {
