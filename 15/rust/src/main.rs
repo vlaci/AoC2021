@@ -15,8 +15,26 @@ fn main() -> anyhow::Result<()> {
     let map = Map::parse(&input)?;
     let dst = map.find_shortest([0, 0], [map.shape[0] - 1, map.shape[1] - 1]);
     println!("The answer to the first part is {}", dst);
+    let map = scale_map(&map);
+    let dst = map.find_shortest([0, 0], [map.shape[0] - 1, map.shape[1] - 1]);
+    println!("The answer to the second part is {}", dst);
 
     Ok(())
+}
+
+fn scale_map(map: &Map) -> Map {
+    let [w, h] = map.shape;
+    let mut new = Map::from_elem([w * 5, h * 5], 0);
+    for x in 0..w * 5 {
+        for y in 0..h * 5 {
+            let f = x / w + y / w;
+            let dx = x % w;
+            let dy = y % w;
+
+            new[[x, y]] = (map[[dx, dy]] + f - 1) % 9 + 1;
+        }
+    }
+    new
 }
 
 #[derive(PartialEq, Clone)]
@@ -184,6 +202,10 @@ mod tests {
         let map = Map::parse(input)?;
         let dst = map.find_shortest([0, 0], [map.shape[0] - 1, map.shape[1] - 1]);
         assert_eq!(dst, 40);
+
+        let map = scale_map(&map);
+        let dst = map.find_shortest([0, 0], [map.shape[0] - 1, map.shape[1] - 1]);
+        assert_eq!(dst, 315);
 
         Ok(())
     }
