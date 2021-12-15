@@ -1,10 +1,4 @@
-use std::{
-    collections::{HashMap, LinkedList},
-    env,
-    fmt::{Debug, Display},
-    fs::read_to_string,
-    ops::{Index, IndexMut},
-};
+use std::{collections::HashMap, env, fs::read_to_string};
 
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
@@ -12,18 +6,14 @@ use itertools::Itertools;
 fn main() -> anyhow::Result<()> {
     let path = env::args().nth(1).ok_or_else(|| anyhow!("No input file"))?;
     let input = read_to_string(&path)?;
-    let polymer = parse_input(&input)?;
-    let polymer = polymer.iter().take(10).last().unwrap();
-    let counts = polymer
-        .to_string()
-        .chars()
-        .counts();
-    let ((_, min), (_, max)) = counts
-        .iter()
-        .minmax_by_key(|&(c, f)| f).into_option().unwrap();
-    println!("The answer to the first part is {}", max-min);
+    let mut polymer = parse_input(&input)?;
+    polymer.mutate(10);
+    let result = polymer.count_result();
+    println!("The answer to the first part is {}", result);
 
-    //println!("The answer to the second part is {:?}", map);
+    polymer.mutate(30);
+    let result = polymer.count_result();
+    println!("The answer to the second part is {:?}", result);
 
     Ok(())
 }
@@ -48,41 +38,60 @@ fn parse_input(rules: &str) -> Result<Polymer> {
 }
 
 struct Polymer {
-    template: Vec<char>,
+    template: HashMap<[char; 2], usize>,
+    ends: [char; 2],
     insertion_rules: HashMap<[char; 2], char>,
 }
 
 impl Polymer {
-    fn from(template: &str, insertion_rules: HashMap<[char; 2], char>) -> Self {
+    fn from(base: &str, insertion_rules: HashMap<[char; 2], char>) -> Self {
+        let mut template = HashMap::new();
+        let chars: Vec<char> = base.chars().collect();
+        for pair in chars.windows(2) {
+            *template.entry([pair[0], pair[1]]).or_insert(0) += 1;
+        }
+        let ends = [*chars.get(0).unwrap(), *chars.last().unwrap()];
+
         Self {
-            template: template.chars().collect::<Vec<_>>(),
+            template,
+            ends,
             insertion_rules,
         }
     }
-
-    fn apply_rules(&self) -> Self {
-        let template: Vec<_> = std::iter::once(self.template[0])
-            .chain(self.template.windows(2).flat_map(|pair| {
-                dbg!(pair);
-                dbg!([self.insertion_rules[pair], pair[1]])
-            }))
-            .collect();
-        let rv = Self {
-            template,
-            insertion_rules: self.insertion_rules.clone(),
-        };
-        dbg!(rv.to_string());
-        rv
+    fn count_result(&self) -> usize {
+        let mut counts = HashMap::new();
+        for (k, v) in self
+            .template
+            .iter()
+            .flat_map(|(&[a, b], &v)| [(a, v), (b, v)])
+        {
+            *counts.entry(k).or_insert(0) += v;
+        }
+        *counts.get_mut(&self.ends[0]).unwrap() += 1;
+        *counts.get_mut(&self.ends[1]).unwrap() += 1;
+        let ((_, min), (_, max)) = counts
+            .iter()
+            .minmax_by_key(|(_, &v)| v)
+            .into_option()
+            .unwrap();
+        max / 2 - min / 2
     }
 
-    fn iter(&self) -> impl Iterator<Item = Polymer> + '_ {
-        std::iter::successors(Some(self.apply_rules()), |p| Some(p.apply_rules()))
+    fn apply_rules(&mut self) {
+        let mut template = HashMap::new();
+        for (pair, count) in &self.template {
+            if let Some(&new) = self.insertion_rules.get(pair) {
+                *template.entry([pair[0], new]).or_insert(0) += count;
+                *template.entry([new, pair[1]]).or_insert(0) += count;
+            }
+        }
+        self.template = template;
     }
-}
 
-impl Display for Polymer {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.template.iter().collect::<String>())
+    fn mutate(&mut self, count: usize) {
+        for _ in 0..count {
+            self.apply_rules()
+        }
     }
 }
 
@@ -115,22 +124,12 @@ mod tests {
         "};
 
         let mut polymer = parse_input(input)?;
+        assert_eq!(polymer.count_result(), 1);
 
-        assert_eq!(polymer.to_string(), "NNCB");
-
-        assert_eq!(
-            polymer
-                .iter()
-                .take(4)
-                .map(|p| p.to_string())
-                .collect::<Vec<_>>(),
-            [
-                "NCNBCHB",
-                "NBCCNBBBCBHCB",
-                "NBBBCNCCNBBNBNBBCHBHHBCHB",
-                "NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB"
-            ]
-        );
+        polymer.mutate(10);
+        assert_eq!(polymer.count_result(), 1588);
+        polymer.mutate(30);
+        assert_eq!(polymer.count_result(), 2188189693529);
 
         Ok(())
     }
