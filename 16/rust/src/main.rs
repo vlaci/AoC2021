@@ -17,13 +17,7 @@ fn main() -> anyhow::Result<()> {
 fn sum_versions(packets: &[Packet]) -> usize {
     packets
         .iter()
-        .map(|p| {
-            let mut v = p.version;
-            if let Payload::Subpacket(ps) = &p.payload {
-                v += sum_versions(ps);
-            }
-            v
-        })
+        .map(|p| p.sum_version())
         .sum()
 }
 
@@ -71,6 +65,21 @@ struct Packet {
 enum Payload {
     Literal(usize),
     Subpacket(Vec<Packet>),
+}
+
+impl Packet {
+    fn sum_version(&self) -> usize {
+        self.version + self.payload.sum_version()
+    }
+}
+
+impl Payload {
+    fn sum_version(&self) -> usize {
+        match self {
+            Payload::Literal(_) => 0,
+            Payload::Subpacket(_, ps) => ps.iter().map(|p| p.sum_version()).sum(),
+        }
+    }
 }
 
 fn decode(input: &str) -> Result<Vec<Packet>> {
