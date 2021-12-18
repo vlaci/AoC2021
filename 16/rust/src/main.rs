@@ -8,17 +8,11 @@ fn main() -> anyhow::Result<()> {
     let bin = to_binstring(&input);
     let packets = decode(&bin)?;
 
-    let vsum = sum_versions(&packets);
-    println!("The answer to the first part is {}", vsum);
+    println!("The answer to the first part is {}", packets.sum_version());
+    let res = packets.eval();
+    println!("The answer to the second part is {}", res);
 
     Ok(())
-}
-
-fn sum_versions(packets: &[Packet]) -> usize {
-    packets
-        .iter()
-        .map(|p| p.sum_version())
-        .sum()
 }
 
 fn to_binstring(input: &str) -> String {
@@ -64,12 +58,26 @@ struct Packet {
 #[derive(Debug, PartialEq)]
 enum Payload {
     Literal(usize),
-    Subpacket(Vec<Packet>),
+    Subpacket(Operation, Vec<Packet>),
+}
+
+#[derive(Debug, PartialEq)]
+enum Operation {
+    Sum,
+    Prod,
+    Min,
+    Max,
+    Gt,
+    Lt,
+    Eq,
 }
 
 impl Packet {
     fn sum_version(&self) -> usize {
         self.version + self.payload.sum_version()
+    }
+    fn eval(&self) -> usize {
+        self.payload.eval()
     }
 }
 
@@ -80,13 +88,34 @@ impl Payload {
             Payload::Subpacket(_, ps) => ps.iter().map(|p| p.sum_version()).sum(),
         }
     }
+    fn eval_subpackets(sp: &[Packet]) -> impl Iterator<Item = usize> + '_ {
+        sp.iter().map(|p| p.eval())
+    }
+    fn eval(&self) -> usize {
+        match self {
+            Payload::Literal(l) => *l,
+            Payload::Subpacket(op, ps) => {
+                let mut sub = Payload::eval_subpackets(ps);
+                match op {
+                Operation::Sum => sub.sum(),
+                Operation::Prod => sub.product(),
+                Operation::Min => sub.min().unwrap(),
+                Operation::Max => sub.max().unwrap(),
+                Operation::Gt => if sub.next().unwrap() > sub.next().unwrap() { 1 } else {0},
+                Operation::Lt => if sub.next().unwrap() < sub.next().unwrap() { 1 } else { 0 },
+                Operation::Eq => if sub.next().unwrap() == sub.next().unwrap() { 1 } else { 0 },
+            }},
+        }
+     }
 }
 
-fn decode(input: &str) -> Result<Vec<Packet>> {
+fn decode(input: &str) -> Result<Packet> {
     peg::parser! {
         grammar parser() for str {
             #[no_eof]
-            pub(crate) rule decode() -> Vec<Packet>
+            pub(crate) rule decode() -> Packet
+                = packet()
+            pub(crate) rule packets() -> Vec<Packet>
                 = packet()+
             rule packet() -> Packet
                 = v:version() p:payload() { Packet { version: v, payload: p } }
@@ -97,13 +126,25 @@ fn decode(input: &str) -> Result<Vec<Packet>> {
             rule operator() -> Payload
                 = op_by_count() / op_by_length()
             rule op_by_length() -> Payload
-                = tid() "0" len:number(15) sub:bits(len) { Payload::Subpacket(decode(&sub).unwrap()) }
+                = id:tid() "0" len:number(15) sub:bits(len) {? Ok(Payload::Subpacket(id, packets(&sub).or(Err("Cannot parse subpackets"))?)) }
             rule op_by_count() -> Payload
-                = tid() "1" count:number(11) p:packet()*<{count}> { Payload::Subpacket(p) }
+                = id:tid() "1" count:number(11) p:packet()*<{count}> { Payload::Subpacket(id, p) }
             rule version() -> usize
                 = number(3)
-            rule tid() -> usize
-                = number(3)
+            rule tid() -> Operation
+                = id:number(3) {
+                    match id {
+                        0 => Operation::Sum,
+                        1 => Operation::Prod,
+                        2 => Operation::Min,
+                        3 => Operation::Max,
+                     // 4 => Literal
+                        5 => Operation::Gt,
+                        6 => Operation::Lt,
+                        7 => Operation::Eq,
+                        _ => unreachable!()
+                    }
+                }
             rule literal_value() -> usize
                 = bl:block()* e:endblock() {
                     let mut res = String::new();
@@ -145,10 +186,10 @@ mod tests {
     fn test_parse_literal() {
         assert_eq!(
             decode("110100101111111000101000").unwrap(),
-            vec![Packet {
+            Packet {
                 version: 6,
                 payload: Payload::Literal(2021)
-            }]
+            }
         )
     }
 
@@ -156,9 +197,9 @@ mod tests {
     fn test_parse_operator_by_len() {
         assert_eq!(
             decode("00111000000000000110111101000101001010010001001000000000").unwrap(),
-            vec![Packet {
+            Packet {
                 version: 1,
-                payload: Payload::Subpacket(vec![
+                payload: Payload::Subpacket(Operation::Lt, vec![
                     Packet {
                         version: 6,
                         payload: Payload::Literal(10)
@@ -168,7 +209,7 @@ mod tests {
                         payload: Payload::Literal(20)
                     }
                 ])
-            }]
+            }
         )
     }
 
@@ -176,9 +217,9 @@ mod tests {
     fn test_parse_operator_by_count() {
         assert_eq!(
             decode("11101110000000001101010000001100100000100011000001100000").unwrap(),
-            vec![Packet {
+            Packet {
                 version: 7,
-                payload: Payload::Subpacket(vec![
+                payload: Payload::Subpacket(Operation::Max, vec![
                     Packet {
                         version: 2,
                         payload: Payload::Literal(1)
@@ -192,7 +233,7 @@ mod tests {
                         payload: Payload::Literal(3)
                     }
                 ])
-            }]
+            }
         )
     }
 }
